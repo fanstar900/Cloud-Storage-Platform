@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+
+  folders Folder[]
+  files   File[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Folder {
+  id       String  @id @default(uuid())
+  name     String
+
+  ownerId  String
+  owner    User    @relation(fields: [ownerId], references: [id])
+
+  parentId String?
+  parent   Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id])
+  children Folder[] @relation("FolderHierarchy")
+
+  files File[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model File {
+  id           String @id @default(uuid())
+  name         String
+  originalName String
+
+  mimeType     String
+  size         Int
+
+  storagePath  String
+
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id])
+
+  folderId String?
+  folder   Folder? @relation(fields: [folderId], references: [id])
+
+  shareLinks ShareLink[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ShareLink {
+  id            String   @id @default(uuid())
+
+  tokenHash     String   @unique
+
+  fileId        String
+  file          File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  expiresAt     DateTime?
+
+  downloadCount Int      @default(0)
+  maxDownloads  Int?
+
+  createdAt     DateTime @default(now())
+}
