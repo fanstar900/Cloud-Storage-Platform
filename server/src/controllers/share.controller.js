@@ -4,6 +4,9 @@ import {
     create_share_link,
     get_shared_file
 } from "../services/share.service.js";
+import {
+    get_download_url
+} from "../services/storage.service.js";
 
 const create_share = async(req, res) => {
     try {
@@ -15,8 +18,8 @@ const create_share = async(req, res) => {
         );
 
         res.status(201).json({
-            share_url: 
-                `http://localhost:5000/api/share/${token}`
+            share_url:
+             `${process.env.CLIENT_URL}/share/${token}`
         });
     } catch(error) {
         if(error.message === "File not found"){
@@ -32,47 +35,26 @@ const create_share = async(req, res) => {
     }
 };
 
-const download_shared_file = async(req, res) =>{
-    try{
+const download_shared_file = async (req, res) => {
+    try {
+
         const file = await get_shared_file(
             req.params.token
         );
 
-        res.setHeader(
-            "Content-Type",
-            file.mimeType
-        );
-
-        res.setHeader(
-            "Content-Length",
-            file.size
-        )
-
-        res.setHeader(
-            "Content-Disposition",
-            `attachment; filename="${file.originalName}"`
-        );
-
-        const stream = fs.createReadStream(
+        const url = await get_download_url(
             file.storagePath
         );
 
-        stream.on("error", (error) => {
-            console.error(error);
-
-            if(!res.headersSent) {
-                res.status(500).json({
-                    message: "Failed to read file"
-                });
-            }else{
-                res.destroy(error);
-            }
+        res.status(200).json({
+            url
         });
 
-        stream.pipe(res);
-    } catch(error){
-        if(error.message === "Shared file not found" ||
-            error.message === "Shared file has expired" ||
+    } catch(error) {
+
+        if(
+            error.message === "Share file not found" ||
+            error.message === "Share file has expired" ||
             error.message === "Download limit reached" ||
             error.message === "File not found on storage"
         ){
@@ -82,13 +64,39 @@ const download_shared_file = async(req, res) =>{
         }
 
         console.error(error);
-        res.status(500).json({  
-            message: "Internal server error"    
-        }) ;
+
+        res.status(500).json({
+            message: "Internal server error"
+        });
     }
-}
+};
+
+const get_shared_file_info = async(req, res) => {
+    try {
+
+        const file = await get_shared_file(
+            req.params.token
+        );
+
+        res.status(200).json({
+            id: file.id,
+            originalName: file.originalName,
+            mimeType: file.mimeType,
+            size: file.size,
+            createdAt: file.createdAt
+        });
+
+    } catch(error) {
+
+        res.status(404).json({
+            message: error.message
+        });
+    }
+};
+
 
 export {
     create_share,
-    download_shared_file
+    download_shared_file,
+    get_shared_file_info
 };

@@ -1,6 +1,5 @@
 import crypto from "crypto";
 import prisma from "../config/database.js";
-import fs from "fs";
 
 const hash_token = (token)=> {
     return crypto
@@ -83,10 +82,6 @@ const get_shared_file = async(token) => {
         share_link.downloadCount >= share_link.maxDownloads
     ){
         throw new Error("Download limit reached");
-    }
-
-    if(!fs.existsSync(share_link.file.storagePath)){
-        throw new Error("File not found on storage");
     }
 
     if(share_link.maxDownloads !== null) {

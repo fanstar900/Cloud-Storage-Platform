@@ -1,5 +1,7 @@
 import prisma from "../config/database.js";
-import fs from "fs/promises";
+import {
+    delete_file_from_storage
+} from "./storage.service.js";
 
 const create_file = async({
     owner_id,
@@ -101,7 +103,11 @@ const get_file_for_download = async(user_id, file_id) => {
     return file;
 };
 
-const delete_file = async(user_id, file_id)=>{
+const delete_file = async(
+    user_id,
+    file_id
+) => {
+
     const file = await prisma.file.findFirst({
         where: {
             id: file_id,
@@ -113,23 +119,19 @@ const delete_file = async(user_id, file_id)=>{
         }
     });
 
-    if(!file) {
+    if(!file){
         throw new Error("file not found");
     }
 
-    try {
-        await fs.unlink(file.storagePath);
-    } catch(error) {
-        if(error.code !== "ENOENT") {
-            throw error;
-        }
-    }
+    await delete_file_from_storage(
+        file.storagePath
+    );
 
     await prisma.file.delete({
         where: {
             id: file.id
         }
-    })
+    });
 
     return file.id;
 };
