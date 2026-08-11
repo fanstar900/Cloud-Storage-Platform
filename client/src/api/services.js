@@ -28,7 +28,7 @@ export const fileApi = {
       },
     })
   },
-  download: (id) => api.get(`/files/${id}/download`, { responseType: 'blob' }),
+  download: (id) => api.get(`/files/${id}/download`),
   remove: (id) => api.delete(`/files/${id}`),
   share: (id, expiresInDays, maxDownloads) =>
     api.post(`/files/${id}/share`, { expires_in_days: expiresInDays, max_downloads: maxDownloads }),
@@ -40,5 +40,5 @@ export const searchApi = {
 
 export const shareApi = {
   getShared: (token) => api.get(`/share/${token}`),
-  download: (token) => api.get(`/share/${token}/download`, { responseType: 'blob' }),
+  download: (token) => api.get(`/share/${token}/download`),
 }

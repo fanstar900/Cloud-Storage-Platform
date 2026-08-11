@@ -114,16 +114,15 @@ export default function Dashboard() {
 
   const handleDownload = async (file) => {
     setDownloadingId(file.id)
+
     try {
       const res = await fileApi.download(file.id)
-      const url = window.URL.createObjectURL(res.data)
-      const a = window.document.createElement('a')
-      a.href = url
-      a.download = file.originalName
-      window.document.body.appendChild(a)
-      a.click()
-      window.document.body.removeChild(a)
-      window.URL.revokeObjectURL(url)
+
+      window.open(
+        res.data.url,
+        '_blank'
+      )
+
       toast.success('Download started')
     } catch (err) {
       toast.error(getErrorMessage(err))

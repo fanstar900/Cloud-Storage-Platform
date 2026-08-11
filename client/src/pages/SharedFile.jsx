@@ -29,16 +29,15 @@ export default function SharedFile() {
 
   const handleDownload = async () => {
     setDownloading(true)
+
     try {
       const res = await shareApi.download(token)
-      const url = window.URL.createObjectURL(res.data)
-      const a = window.document.createElement('a')
-      a.href = url
-      a.download = file?.name || 'download'
-      window.document.body.appendChild(a)
-      a.click()
-      window.document.body.removeChild(a)
-      window.URL.revokeObjectURL(url)
+
+      window.open(
+        res.data.url,
+        '_blank'
+      )
+
     } catch (err) {
       setError(getErrorMessage(err))
     } finally {
