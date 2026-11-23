@@ -37,18 +37,12 @@ app.get("/api/health", (req, res) => {
 
 const port = process.env.PORT || 5000;
 
-const start_server = async()=>{
-    try {
-        await connect_redis();
+app.listen(port, ()=>{
+    console.log(`Server is running on port ${port}`);
+});
 
-        app.listen(port, ()=>{
-            console.log(`Server is running on port ${port}`);
-        });
-
-    }catch(error) {
-        console.error("Failed to start server:", error);
-        process.exit(1);
-    }
-};
-
-start_server();
+// Redis is an optional cache: connect in the background and let
+// cache.service fall back to the database while it is unavailable.
+connect_redis().catch((error) => {
+    console.error("Redis unavailable, continuing without cache:", error.message);
+});

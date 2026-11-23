@@ -54,7 +54,8 @@ const create_share_link = async(
     return token;
 };
 
-const get_shared_file = async(token) => {
+// consume = true counts this call as a download; false only validates the link
+const get_shared_file = async(token, { consume = false } = {}) => {
     const token_hash = hash_token(token);
 
     const share_link = await prisma.shareLink.findUnique({
@@ -82,6 +83,10 @@ const get_shared_file = async(token) => {
         share_link.downloadCount >= share_link.maxDownloads
     ){
         throw new Error("Download limit reached");
+    }
+
+    if(!consume) {
+        return share_link.file;
     }
 
     if(share_link.maxDownloads !== null) {

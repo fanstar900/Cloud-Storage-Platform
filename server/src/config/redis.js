@@ -1,7 +1,11 @@
 import { createClient } from "redis";
 
 const redis_client = createClient({
-    url: process.env.REDIS_URL || "redis://localhost:6379"
+    url: process.env.REDIS_URL || "redis://localhost:6379",
+    socket: {
+        // Back off up to 30s between retries so a missing Redis doesn't flood logs
+        reconnectStrategy: (retries) => Math.min(retries * 1000, 30000)
+    }
 });
 
 redis_client.on("error", (error) => {

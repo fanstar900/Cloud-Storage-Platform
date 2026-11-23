@@ -1,5 +1,3 @@
-import fs from "fs";
-
 import {
     create_share_link,
     get_shared_file
@@ -7,6 +5,13 @@ import {
 import {
     get_download_url
 } from "../services/storage.service.js";
+
+// Must match the messages thrown by get_shared_file in share.service.js
+const SHARE_ERRORS = [
+    "Share link not found",
+    "Share link expired",
+    "Download limit reached"
+];
 
 const create_share = async(req, res) => {
     try {
@@ -39,7 +44,8 @@ const download_shared_file = async (req, res) => {
     try {
 
         const file = await get_shared_file(
-            req.params.token
+            req.params.token,
+            { consume: true }
         );
 
         const url = await get_download_url(
@@ -52,12 +58,7 @@ const download_shared_file = async (req, res) => {
 
     } catch(error) {
 
-        if(
-            error.message === "Share file not found" ||
-            error.message === "Share file has expired" ||
-            error.message === "Download limit reached" ||
-            error.message === "File not found on storage"
-        ){
+        if(SHARE_ERRORS.includes(error.message)){
             return res.status(404).json({
                 message: error.message
             });
@@ -88,8 +89,16 @@ const get_shared_file_info = async(req, res) => {
 
     } catch(error) {
 
-        res.status(404).json({
-            message: error.message
+        if(SHARE_ERRORS.includes(error.message)){
+            return res.status(404).json({
+                message: error.message
+            });
+        }
+
+        console.error(error);
+
+        res.status(500).json({
+            message: "Internal server error"
         });
     }
 };

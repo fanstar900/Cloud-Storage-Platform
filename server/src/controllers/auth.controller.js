@@ -23,8 +23,11 @@ const register = async (req, res) => {
             password
         );
 
+        const token = generate_token(user.id);
+
         res.status(201).json({
             message: "User registered successfully",
+            token,
             user
         });
     } catch (error) {
