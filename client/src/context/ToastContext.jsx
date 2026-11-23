@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useState } from 'react'
+import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react'
 
 const ToastContext = createContext(null)
@@ -16,11 +16,12 @@ export function ToastProvider({ children }) {
     setTimeout(() => remove(id), 4000)
   }, [remove])
 
-  const toast = {
+  // Stable identity so consumers can safely list `toast` in hook deps
+  const toast = useMemo(() => ({
     success: (m) => add(m, 'success'),
     error: (m) => add(m, 'error'),
     info: (m) => add(m, 'info'),
-  }
+  }), [add])
 
   return (
     <ToastContext.Provider value={toast}>

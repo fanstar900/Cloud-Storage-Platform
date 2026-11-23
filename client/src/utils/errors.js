@@ -11,6 +11,9 @@ export function getErrorMessage(error) {
       data?.message || data?.error || data?.details ||
       (typeof data === 'string' ? data : null)
 
+    // A 401 from login/register means bad credentials, not an expired session
+    const isAuthRequest = error.config?.url?.startsWith('/auth/')
+    if (status === 401 && isAuthRequest) return serverMsg || 'Invalid email or password'
     if (status === 401) return 'Session expired. Please sign in again.'
     if (status === 400) return serverMsg || 'Invalid request. Please check your input.'
     if (status === 404) return serverMsg || 'The requested resource was not found.'
